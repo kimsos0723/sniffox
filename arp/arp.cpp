@@ -2,6 +2,8 @@
 #include <unistd.h>
 #include <thread>
 #include <string>
+#include <signal.h>
+#include <stdlib.h>
 EthernetII::address_type itoh(NetworkInterface iface, IPv4Address ip)
 {
     PacketSender sender;
@@ -112,12 +114,18 @@ void ip_forwarding(IPv4Address to, IPv4Address from, addr_type to_hw,
     delete pdu;
 }
 
+void exit_handle(int s){
+    cout<<endl<<"EXIT"<<endl;
+    system("sudo iptables -t nat -D POSTROUTING -s 0/0 -j MASQUERADE");
+    exit(0);
+}
+
 void do_arp_spoofing(NetworkInterface iface, IPv4Address gw,
                      IPv4Address target, const NetworkInterface::Info &info, IPv4Address my_ip_addr)
 {
     addr_type gw_hw = itoh(iface, gw);
     addr_type target_hw = itoh(iface, target);
-
+   signal (SIGINT,exit_handle);
     cout << "────────────────────┰─────────────────────" << endl;
     cout << " Gateway hw address ┃ " << gw_hw << endl;
     cout << "────────────────────╂─────────────────────" << endl;
@@ -134,4 +142,5 @@ void do_arp_spoofing(NetworkInterface iface, IPv4Address gw,
     t2.join();
     t3.join();
     t4.join();
+ 
 }
