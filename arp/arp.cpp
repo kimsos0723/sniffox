@@ -43,7 +43,7 @@ void ip_forwarding(IPv4Address to, IPv4Address from, addr_type to_hw,
     PDU *pdu;
     PacketSender sender;
     uint64_t i = 0;    
-    NetworkInterface iface("wlp2s0");
+    NetworkInterface iface= NetworkInterface::default_interface();
     NetworkInterface::Info info = iface.addresses();
     while (true)
     {
