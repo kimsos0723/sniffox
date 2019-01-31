@@ -76,6 +76,8 @@ void ip_forwarding(IPv4Address to, IPv4Address from, addr_type to_hw,
                         cout<<"ip src : "<<new_eth.find_pdu<IP>()->src_addr().to_string()<< endl;
                         cout<<"src port : "<<new_eth.find_pdu<TCP>()->sport()<<endl;
                         cout<<"dst port : "<<new_eth.find_pdu<TCP>()->dport()<<endl;
+                        byte_array dump = new_eth.rfind_pdu<RawPDU>().serialize();
+                        cout<<"[DUMP]  "<< endl<< string(dump.begin(), dump.end());                    
                         sender.send(new_eth);                        
                         break;
                      }
