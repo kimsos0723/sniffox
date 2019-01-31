@@ -74,6 +74,8 @@ void ip_forwarding(IPv4Address to, IPv4Address from, addr_type to_hw,
                         cout<<"hw src : "<<new_eth.src_addr().to_string()<<endl;
                         cout<<"ip dst : "<<new_eth.find_pdu<IP>()->dst_addr().to_string()<< endl;
                         cout<<"ip src : "<<new_eth.find_pdu<IP>()->src_addr().to_string()<< endl;
+                        cout<<"src port : "<<new_eth.find_pdu<TCP>()->sport()<<endl;
+                        cout<<"dst port : "<<new_eth.find_pdu<TCP>()->dport()<<endl;
                         sender.send(new_eth);                        
                         break;
                      }
@@ -115,8 +117,13 @@ void ip_forwarding(IPv4Address to, IPv4Address from, addr_type to_hw,
 }
 
 void exit_handle(int s){
-    cout<<endl<<"EXIT"<<endl;
+    cout<<endl;
     system("sudo iptables -t nat -D POSTROUTING -s 0/0 -j MASQUERADE");
+    system("sudo sysctl -w net.ipv4.ip_forward=0");
+    system("sudo sysctl -w net.ipv4.conf.all.send_redirects=0");
+    cout<<"BYE"<<endl;
+    
+    cout<<endl<<"EXIT"<<endl;
     exit(0);
 }
 

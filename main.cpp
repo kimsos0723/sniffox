@@ -23,7 +23,7 @@ int main(int argc, char const *argv[]) {
     }
     start();
 
-    NetworkInterface iface = NetworkInterface::default_interface();
+    NetworkInterface iface("wlp2s0");
     NetworkInterface::Info info = iface.addresses();
     IPv4Address gw, target, my_ip_addr;
 
@@ -32,22 +32,23 @@ int main(int argc, char const *argv[]) {
         cout<<"- can not access iptables command"<<endl;
         return -1;
     }   
-    ofstream forward_stream("/proc/sys/net/ipv4/ip_forward");
-    if(forward_stream.is_open()) {
-        forward_stream << "1";
-    } else {
-        cout<<"System ERROR"<<endl;
-        cout<<"- can not access ' proc/sys/net/ipv4/ip_forward'"<<endl;
+
+    
+    
+    if(!system("sudo sysctl -w net.ipv4.ip_forward=1")){
+        cout<<"Successful access to the net.ipv4.ip_forward"<<endl;
+    }else {
+        cout<<"- can not access 'net.ipv4.ip_forward'"<<endl;
         exit(-1);
     }
     
-    ofstream redirects_stream("/proc/sys/net/ipv4/conf/all/send_redirects");
-    if(redirects_stream.is_open()){
-        redirects_stream <<"1";
+    if(!system("sudo  sysctl -w net.ipv4.conf.all.send_redirects=1")){
+        cout<<"Successful access to the net.ipv4.ip_forward"<<endl;
     }else {
-        cout<<"- can not access ' proc/sys/net/ipv4/conf/all/send_redirects'"<<endl;
+        cout<<"- can not access 'net.ipv4.ip_forward'"<<endl;
         exit(-1);
     }
+    
     try{
         gw= argv[1];
         target = argv[2];
