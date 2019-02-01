@@ -4,7 +4,7 @@
 #include <string>
 #include <signal.h>
 #include <stdlib.h>
-#include "../modulation/modulation.h"
+#include "../show/show.h"
 EthernetII::address_type itoh(NetworkInterface iface, IPv4Address ip)
 {
     PacketSender sender;
@@ -24,19 +24,7 @@ void send_arp_loop(IPv4Address to_ip, IPv4Address from_ip, addr_type to_hw, Netw
     }
 }
 
-void check_dns(DNS my_dns)
-{
-    cout << "┎─[DNS]───────────────────┒" << endl;
-    for (const auto &query : my_dns.queries())
-    {
-        cout << "┃ [TYPE] " << DNS::QRType(query.type()) << endl;
-        cout << "┃ [QTYPE] " << query.query_type() << endl;
-        cout << "┃ [DNAME] " << query.dname() << endl;
-        cout << "┃ [CLASS] " << query.query_class() << endl;
-    }
-    cout << "┖─────────────────────────┚" << endl;
-    cout << endl;
-}
+
 
 void ip_forwarding(IPv4Address to, IPv4Address from, addr_type to_hw,
                    addr_type from_hw, string device, IPv4Address my_ip_addr)
@@ -66,35 +54,27 @@ void ip_forwarding(IPv4Address to, IPv4Address from, addr_type to_hw,
                 {
                     case SLL::PDUType::TCP:
                     {
-                        cout << "[TCP]" << endl;
                         auto my_tcp = my_ip.rfind_pdu<TCP>();                                        
+                        cout << "[TCP]" << endl<<"dport : "<<my_tcp.dport() << endl<<"sport : "<<my_tcp.sport()<<endl;                        
                         EthernetII new_eth = EthernetII(to_hw,info.hw_addr)/IP(to,my_ip_addr)/ my_tcp;                         
-                        sender.send(change_tcp(new_eth));                        
+                        sender.send(show_tcp(new_eth));                        
                         break;
                      }
                     case SLL::PDUType::UDP: 
-                    {
-                        cout << "[UDP]" << endl;
-                        auto my_udp = my_ip.rfind_pdu<UDP>();
-                        auto my_dns = my_udp.rfind_pdu<RawPDU>().to<DNS>();
-                        check_dns(my_dns);
-                        my_eth.src_addr(info.hw_addr);
-                        my_eth.dst_addr(to_hw);
-
-                        my_ip.src_addr(my_ip_addr);
-                        my_ip.dst_addr(to);                                        
+                    {                        
+                        auto my_udp = my_ip.rfind_pdu<UDP>();        
                         
-                        EthernetII new_eth = my_eth / my_ip/ my_udp ;
-                        cout<<"=========[SEND 2 Forwarding]========="<<endl; 
-                        cout<<"[ETHERNET II]" << endl;
-                        cout<<"hw dst : "<<new_eth.dst_addr().to_string()<<endl;                    
-                        cout<<"hw src : "<<new_eth.src_addr().to_string()<<endl;
-                        sender.send(new_eth);                        
+                        cout <<"[UDP]"<< endl <<"dport : "<< my_udp.dport()<< endl <<"sport : " <<my_udp.sport() <<endl;;                                                               
+                        EthernetII new_eth = EthernetII(to_hw,info.hw_addr)/IP(to,my_ip_addr)/ my_udp;                        
+                        
+                        sender.send(show_udp(new_eth));                                               
                         break;
                     }
                     default:
                     {
-                        cout<<"[DEFAULT]"<<endl;
+                        cout<<"[ UNDEFINE ]"<<endl;
+                        auto ip_inner_dump = my_ip.serialize();                        
+                        cout<<string(ip_inner_dump.begin(),ip_inner_dump.end())<<endl;
                     }                
                 }
             }
