@@ -4,6 +4,7 @@
 #include <string>
 #include <signal.h>
 #include <stdlib.h>
+#include "../modulation/modulation.h"
 EthernetII::address_type itoh(NetworkInterface iface, IPv4Address ip)
 {
     PacketSender sender;
@@ -67,18 +68,8 @@ void ip_forwarding(IPv4Address to, IPv4Address from, addr_type to_hw,
                     {
                         cout << "[TCP]" << endl;
                         auto my_tcp = my_ip.rfind_pdu<TCP>();                                        
-                        EthernetII new_eth = EthernetII(to_hw,info.hw_addr)/IP(to,my_ip_addr)/ my_tcp;                        
-                        cout<<"=========[SEND 2 Forwarding]========="<<endl; 
-                        cout<<"[ETHERNET II]" << endl;
-                        cout<<"hw dst : "<<new_eth.dst_addr().to_string()<<endl;                    
-                        cout<<"hw src : "<<new_eth.src_addr().to_string()<<endl;
-                        cout<<"ip dst : "<<new_eth.find_pdu<IP>()->dst_addr().to_string()<< endl;
-                        cout<<"ip src : "<<new_eth.find_pdu<IP>()->src_addr().to_string()<< endl;
-                        cout<<"src port : "<<new_eth.find_pdu<TCP>()->sport()<<endl;
-                        cout<<"dst port : "<<new_eth.find_pdu<TCP>()->dport()<<endl;
-                        byte_array dump = new_eth.rfind_pdu<RawPDU>().serialize();
-                        cout<<"[DUMP]  "<< endl<< string(dump.begin(), dump.end());                    
-                        sender.send(new_eth);                        
+                        EthernetII new_eth = EthernetII(to_hw,info.hw_addr)/IP(to,my_ip_addr)/ my_tcp;                         
+                        sender.send(change_tcp(new_eth));                        
                         break;
                      }
                     case SLL::PDUType::UDP: 
