@@ -1,8 +1,8 @@
-# SNIFOX
+# SNIFFOX
 
 ## Explanation
 
-SNIFOX is arp spoofing tool,\
+SNIFFOX is arp spoofing tool,\
 sslstrip was not applied but It had a successful test on Http
 
 
@@ -12,7 +12,7 @@ sslstrip was not applied but It had a successful test on Http
  - Libtins 
  - boost/program_options
  - libpcap-dev
- - Linux 
+ - Debian 
 
 ## Instalation
     git clone https://github.com/kimsos0723/sniffox.git
