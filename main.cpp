@@ -1,40 +1,26 @@
-#include "./arp/arp.h"
-#include <fstream>
+#include <iostream>
+#include <thread>
+#include <boost/program_options.hpp>
+#include <signal.h>
+#include "arpspoof/arpspoof.h"
 
+using namespace boost;
 using namespace std;
-using namespace Tins;
+using namespace boost::program_options;
 
-void start(){
-    cout<<"\033[H\033[J";
-    cout << "██╗  ██╗██╗   ██╗██╗      ██████╗ ███████╗███╗   ██╗██╗███████╗███████╗"<<endl;
-    cout <<"╚██╗██╔╝╚██╗ ██╔╝██║     ██╔═══██╗██╔════╝████╗  ██║██║██╔════╝██╔════╝"<<endl;
-    cout << " ╚███╔╝  ╚████╔╝ ██║     ██║   ██║███████╗██╔██╗ ██║██║█████╗  █████╗  "<<endl;
-    cout << " ██╔██╗   ╚██╔╝  ██║     ██║   ██║╚════██║██║╚██╗██║██║██╔══╝  ██╔══╝  "<<endl;
-    cout <<"██╔╝ ██╗   ██║   ███████╗╚██████╔╝███████║██║ ╚████║██║██║     ██║     "<<endl;
-    cout <<"╚═╝  ╚═╝   ╚═╝   ╚══════╝ ╚═════╝ ╚══════╝╚═╝  ╚═══╝╚═╝╚═╝     ╚═╝     "<<endl;
-    cout <<"================================================================================="<<endl<<endl<<endl;
+void intro() {
+    cout<<R"(
+███████╗███╗   ██╗██╗███████╗███████╗ ██████╗ ██╗  ██╗
+██╔════╝████╗  ██║██║██╔════╝██╔════╝██╔═══██╗╚██╗██╔╝
+███████╗██╔██╗ ██║██║█████╗  █████╗  ██║   ██║ ╚███╔╝ 
+╚════██║██║╚██╗██║██║██╔══╝  ██╔══╝  ██║   ██║ ██╔██╗ 
+███████║██║ ╚████║██║██║     ██║     ╚██████╔╝██╔╝ ██╗
+╚══════╝╚═╝  ╚═══╝╚═╝╚═╝     ╚═╝      ╚═════╝ ╚═╝  ╚═╝
+                                                      
+)"<<endl;
 }
 
-
-int main(int argc, char const *argv[]) {
-    if(argc != 4){
-        cout << "Usage :" << argv[0] <<" <Gateway IP> <Target IP> <My local IP>" << endl;
-        return 1;
-    }
-    start();
-
-    NetworkInterface iface("wlp2s0");
-    NetworkInterface::Info info = iface.addresses();
-    IPv4Address gw, target, my_ip_addr;
-
-    if(system("sudo iptables -t nat -I POSTROUTING -s 0/0 -j MASQUERADE | sudo iptables -P FORWARD ACCEPT")) {
-        cout<<"System ERROR"<<endl;
-        cout<<"- can not access iptables command"<<endl;
-        return -1;
-    }   
-
-    
-    
+void setIpForwardOpt() {
     if(!system("sudo sysctl -w net.ipv4.ip_forward=1")){
         cout<<"Successful access to the net.ipv4.ip_forward"<<endl;
     }else {
@@ -48,16 +34,66 @@ int main(int argc, char const *argv[]) {
         cout<<"- can not access 'net.ipv4.ip_forward'"<<endl;
         exit(-1);
     }
-    
-    try{
-        gw= argv[1];
-        target = argv[2];
-        my_ip_addr = argv[3];
-    } catch(...){
-        cout <<"Invalid ip found...\n";
-        return 2;
-    }
-    do_arp_spoofing(iface,gw,target,info,my_ip_addr);
-    return 0;
 }
 
+void exitHandler(int s) {
+    system("sudo iptables -t nat -D POSTROUTING -s 0/0 -j MASQUERADE");
+    system("sudo sysctl -w net.ipv4.ip_forward=0");
+    system("sudo sysctl -w net.ipv4.conf.all.send_redirects=0");
+
+    cout<<"\n\nGood Bye"<<endl;
+    exit(0);
+}
+
+int main(int argc, char const *argv[]) {        
+    intro();
+
+    if (getuid()) {
+        printf("%s", "You must be root!\n");
+        return 0;
+    }
+    else printf("%s", "OK, you are root.\n");
+
+    setIpForwardOpt();
+    signal (SIGINT,exitHandler);
+    options_description desc("Allowed options");
+
+    desc.add_options()
+    ("help,h", "produce a help screen")
+    ("version,v", "print the version number")
+    ("target,t", program_options::value<std::string>(),"target ip address")
+    ("ip,i", program_options::value<std::string>(), "your ip address")
+    ("gateway,g", program_options::value<std::string>(), "your gateway ip address")
+    ("device,d", program_options::value<std::string>(), "network device to use");    
+
+    variables_map vm;
+
+    store(parse_command_line(argc, argv, desc),vm);
+
+    if(vm.count("help")) {
+        std::cout << "Usage: regex [options]\n";
+        std::cout << desc;
+        return 0;
+    }
+    if(vm.count("version")) {
+        std::cout << "Version 2.\n";
+        return 0;
+    }    
+    try {       
+    } catch(...) {
+        std::cout << "You should write '_ ./arpfox -h'"<<std::endl;
+        return 1;
+    }
+
+    auto spoof = new ArpSpoofer(Tins::IPv4Address(vm["target"].as<std::string>()), Tins::IPv4Address(vm["ip"].as<std::string>()), Tins::IPv4Address(vm["gateway"].as<std::string>()), vm["device"].as<std::string>());
+    thread t1(&ArpSpoofer::doArpspoof, spoof);    
+    thread t2 = spoof->ipForwardToGwThread();
+    thread t3 = spoof->ipForwardToTargetThread();
+
+    t1.join();
+    t2.join();
+    t3.join();
+
+    delete spoof;
+    return 0;
+}
