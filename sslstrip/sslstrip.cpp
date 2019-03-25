@@ -31,7 +31,8 @@ TLS::TLS(const byte_array d) : dump(d) {
     }    
 }
 
-std::string TLS::servername() {
+std::string TLS::servername() {    
+    if(this->cType == this->HANDSHAKE)
     for(int i=0;i<((this->exLen[0]<<8)|(this->exLen[1]));i+=4){                       
             if(static_cast<int>(this->extensions[static_cast<size_t>(i)]) == 0 && static_cast<int>(this->extensions[static_cast<size_t>(i+1)]) == 0) {
                 copy(&this->extensions[static_cast<size_t>(i)], &this->extensions[static_cast<size_t>(i+2)],this->sn.type);

@@ -63,7 +63,7 @@ typedef struct TlsServerName{
 }servName_t;    
 
 class TLS { 
-private:
+public:
     byte_array dump;
     uint8_t cType;
     ver ver1;
@@ -79,9 +79,9 @@ private:
     uint8_t CMLen;
     vector<uint8_t> compressionMethods;
     uint8_t exLen[2];
-    vector<uint8_t> extensions;
+    vector<uint8_t> extensions;    
+
     servName_t sn;     
-public:
     explicit TLS(const byte_array);
     enum ContentType {
         ChangeCipherSpec = 20,
