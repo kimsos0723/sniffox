@@ -22,3 +22,5 @@ sslstrip was not applied but It had a successful test on Http
 
 ## Usage
     sudo ./sniffox -h
+
+

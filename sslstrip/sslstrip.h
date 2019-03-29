@@ -15,7 +15,7 @@ using Tins::byte_array;
 using Tins::RawPDU;
 using Tins::PDU;
 using std::vector;
-
+using std::string;
 typedef struct tlsVersion {
     
     uint8_t v[2];  
@@ -109,8 +109,10 @@ public:
 
 
 class SslStrip {
-private:
-        
+public:
+    vector<TLS> tlsList;
+    vector<std::string> httpList;    
+    
 };
 
 

@@ -28,7 +28,7 @@ void setIpForwardOpt() {
         exit(-1);
     }
     
-    if(!system("sudo  sysctl -w net.ipv4.conf.all.send_redirects=1")){
+    if(!system("sudo sysctl -w net.ipv4.conf.all.send_redirects=1")){
         cout<<"Successful access to the net.ipv4.ip_forward"<<endl;
     }else {
         cout<<"- can not access 'net.ipv4.ip_forward'"<<endl;
@@ -47,7 +47,6 @@ void exitHandler(int s) {
 
 int main(int argc, char const *argv[]) {        
     intro();
-
     if (getuid()) {
         printf("%s", "You must be root!\n");
         return 0;
