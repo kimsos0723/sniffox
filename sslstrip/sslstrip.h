@@ -107,12 +107,10 @@ public:
     std::string servername();    
 };
 
-
 class SslStrip {
 public:
     vector<TLS> tlsList;
-    vector<std::string> httpList;    
-    
+    vector<std::string> httpList;        
 };
 
 

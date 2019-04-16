@@ -41,8 +41,7 @@ std::string TLS::servername() {
                 this->sn.sni.type = this->extensions[static_cast<size_t>(i+6)];
                 copy(&this->extensions[static_cast<size_t>(i+7)], &this->extensions[static_cast<size_t>(i+9)],this->sn.sni.nameLen);                                
                 this->sn.sni.name.assign(this->extensions.begin()+i+9,this->extensions.begin()+i+9+((this->sn.sni.nameLen[0]<<8)|(this->sn.sni.nameLen[1])));
-                return std::string(this->sn.sni.name.begin(), this->sn.sni.name.end());
-            
+                return std::string(this->sn.sni.name.begin(), this->sn.sni.name.end());            
             } else {
                 i+=((this->extensions[static_cast<size_t>(i)+2]<<8)|(this->extensions[static_cast<size_t>(i)+3]));
             }
