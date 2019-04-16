@@ -20,7 +20,7 @@ void intro() {
 )"<<endl;
 }
 
-void setIpForwardOpt() {
+void setsetPacketBufferOpt() {
     if(!system("sudo sysctl -w net.ipv4.ip_forward=1")){
         cout<<"Successful access to the net.ipv4.ip_forward"<<endl;
     }else {
@@ -53,7 +53,7 @@ int main(int argc, char const *argv[]) {
     }
     else printf("%s", "OK, you are root.\n");
 
-    setIpForwardOpt();
+    setsetPacketBufferOpt();
     signal (SIGINT,exitHandler);
     options_description desc("Allowed options");
 
@@ -85,14 +85,19 @@ int main(int argc, char const *argv[]) {
     }
 
     auto spoof = new ArpSpoofer(Tins::IPv4Address(vm["target"].as<std::string>()), Tins::IPv4Address(vm["ip"].as<std::string>()), Tins::IPv4Address(vm["gateway"].as<std::string>()), vm["device"].as<std::string>());
-    thread t1(&ArpSpoofer::doArpspoof, spoof);    
-    thread t2 = spoof->ipForwardToGwThread();
-    thread t3 = spoof->ipForwardToTargetThread();
+
+    thread t1(&ArpSpoofer::doArpspoof, spoof);
+    
+    thread t2 = spoof->setPacketBufferToGwThread();
+    thread t3 = spoof->setPacketBufferToTargetThread();
+    thread t4 = spoof->bufferSendToGwThread();
+    thread t5 = spoof->bufferSendToTargetThread();
 
     t1.join();
     t2.join();
     t3.join();
-
+    t4.join();
+    t5.join();
     delete spoof;
     return 0;
 }
