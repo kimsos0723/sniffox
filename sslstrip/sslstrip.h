@@ -16,6 +16,7 @@ using Tins::RawPDU;
 using Tins::PDU;
 using std::vector;
 using std::string;
+
 typedef struct tlsVersion {
     
     uint8_t v[2];  
@@ -41,6 +42,7 @@ typedef struct tlsVersion {
         };
     }
 }ver;
+
 typedef struct {   
 public: 
     unsigned char b[3];
@@ -103,7 +105,7 @@ public:
         CERTIFVERIFY,
         CLNTKEYEXCHANGE,
         FIN
-    };    
+    };
     std::string servername();    
 };
 
@@ -112,6 +114,5 @@ public:
     vector<TLS> tlsList;
     vector<std::string> httpList;        
 };
-
 
 #endif //SSL_STRIP_H

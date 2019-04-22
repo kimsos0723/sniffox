@@ -38,8 +38,8 @@ void ArpSpoofer::doArpspoof() {
     cout<<"t hw: "<<toTarget.rfind_pdu<ARP>().target_hw_addr().to_string()<<endl;
     int i=0;
     std::ios::sync_with_stdio(false);
-    while(true) {                
-        cout << i++ <<endl ;
+    while(true) {
+        cout << i++ <<endl;
         this->arpSender.send(toGw,iface);        
         this->arpSender.send(toTarget,iface);                    
         sleep(3);
@@ -102,7 +102,7 @@ void ArpSpoofer::setPacketBuffer(ForwardParam p, Array a)
         auto fut = std::async(std::launch::async, [&a,this,&pdu,&p](){
             static int index = 0;
             a[index++] = this->modifyPacket(pdu,p);
-            if(index == 5) 
+            if(index == BufSize) 
                 index=0;            
         });
         fut.get();

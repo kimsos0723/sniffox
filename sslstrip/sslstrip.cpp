@@ -46,6 +46,6 @@ std::string TLS::servername() {
                 i+=((this->extensions[static_cast<size_t>(i)+2]<<8)|(this->extensions[static_cast<size_t>(i)+3]));
             }
     }
-    return "NOTFOUND";
+    return "\r";
 }
 

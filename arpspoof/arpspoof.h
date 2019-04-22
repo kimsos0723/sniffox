@@ -1,15 +1,20 @@
 #ifndef ARPSPOOF_H
 #define ARPSPOOF_H
-#define BSIZE 4
+
 #include <iostream>
 #include <tins/tins.h>
 #include <thread>
 #include <array>
 using namespace Tins;
 
+constexpr int BufSize = 6;
+
 using  std::cout;
 using std::endl;
-using Array = std::array<EthernetII, 5>;
+using Array = std::array<EthernetII, BufSize>;
+
+
+
 struct ForwardParam { 
         IPv4Address to;
         IPv4Address from;
