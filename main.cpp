@@ -75,7 +75,7 @@ int main(int argc, char const *argv[]) {
         return 0;
     }
     if(vm.count("version")) {
-        std::cout << "Version 2.\n";
+        std::cout << "Version 2.3\n";
         return 0;
     }    
     try {       
