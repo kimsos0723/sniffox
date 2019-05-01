@@ -18,18 +18,6 @@ sslstrip was not applied but It had a successful test on Http
  - libpcap-dev
  - Debian 
 
-## Instalation
-    git clone https://github.com/kimsos0723/sniffox.git
-    cd sniffox
-    chmod +x sniffox
-
-
-## dependency
-
- - Libtins 
- - boost/program_options
- - libpcap-dev
- - Debian 
 
 ## Instalation
     git clone https://github.com/kimsos0723/sniffox.git
