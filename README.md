@@ -25,8 +25,7 @@ sslstrip was not applied but It had a successful test on Http
     chmod +x sniffox
 
 
-## Usage
-    sudo ./sniffox -hpendency
+## dependency
 
  - Libtins 
  - boost/program_options
