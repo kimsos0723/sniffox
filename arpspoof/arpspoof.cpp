@@ -1,5 +1,5 @@
 #include "./arpspoof.h"
-#include "../sslstrip/sslstrip.h"
+#include "../sslstrip/ssl.h"
 #include <unistd.h>
 #include <future>
 using std::cout;
@@ -57,7 +57,11 @@ EthernetII ArpSpoofer::modifyPacket(PDU* pdu, ForwardParam& p) {
             TCP myTcp = pdu->rfind_pdu<TCP>();
             if (myTcp.dport() == 443) {
                 TLS *tls = new TLS(myTcp.serialize());
-                cout << tls->servername() << endl;
+                if(tls->handshake.type.num == Htype_t::CLIENT_HELLO) {
+                    cout << tls->handshake.Extensions.server_names() << endl;
+                } else {
+                    cout<<"...."<<endl;
+                }   
                 delete tls;
             } else {
                 newEth /= myTcp;
