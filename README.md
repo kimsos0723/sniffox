@@ -1,6 +1,5 @@
 # SNIFFOX
 #### sniffing tool
-## Explanation
 
 
 ## Explanation
