@@ -11,6 +11,7 @@ make install
 sudo apt install libboost-program-options-dev 
 cd ../
 mkdir sniffox
-git clone 
+cd sniffox
+git clone https://github.com/kimsos0723/sniffox
 g++ -std=c++17 ./src/sslstrip/ssl.cpp \
 ./src/arpspoof/arpspoof.cpp ./src/main.cpp -lpthread -ltins -lboost_program_options -o arpfox.run
