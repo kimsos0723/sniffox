@@ -9,11 +9,10 @@ sslstrip was not applied but It had a successful test on Http
 
 ## Dependency
 
-- Libtins 
+ - Libtins 
  - boost/program_options
  - libpcap-dev
  - Debian 
-
 
 ## Instalation
     git clone https://github.com/kimsos0723/sniffox.git

@@ -62,12 +62,12 @@ std::string Extentions_t::server_names() {
             sni.snType = bytes[i + 5];
             sni.snlen = catUint8(bytes[i + 6], bytes[i + 7]);
             sni.servName = std::string(bytes.begin() + i + 9, bytes.begin() + i + 9 + sni.snlen);
-            return sni.servName;
+            return sni.servName+"\n";
         } else {
             i += catUint8(bytes[i + 3], bytes[i + 4]);
         }
     }    
-    return "";
+    return "\n";
 }
 
 uint16_t catUint8(int8_t f, int8_t l) {

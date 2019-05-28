@@ -52,7 +52,7 @@ private:
 public:                    
     ArpSpoofer() = default;
     ArpSpoofer(IPv4Address target, IPv4Address my, IPv4Address gw, std::string device);    
-
+    
     IPv4Address getGwIp() {return this->gwIp;}
     IPv4Address getTargetIP() {return this->targetIp;}
     HWAddress<6> getGwHw() {return this->gwHwAddr;}
@@ -64,34 +64,33 @@ public:
     EthernetII modifyPacket(PDU* pdu, ForwardParam& p);
 
     void setPacketBuffer(ForwardParam p, Array a);
-    void sendPacketBuffer(Array a) {
-        for(auto i : a)
+    void sendPacketBuffer(Array ar) {
+        for(auto i : ar)
             this->arpSender.send(i);
     };
-
     EthernetII MakeArpReply(IPv4Address to, IPv4Address from, ARP::hwaddress_type toHw);
 
     std::thread bufferSendToGwThread() {
         return std::thread(
-            [&]{sendPacketBuffer(this->Gbuffer);}
+            [this]{sendPacketBuffer(this->Gbuffer);}
         );
     }
 
     std::thread bufferSendToTargetThread() {
         return std::thread(
-            [&]{sendPacketBuffer(this->Vbuffer);}
+            [this]{sendPacketBuffer(this->Vbuffer);}
         );
     }
 
     std::thread setPacketBufferToGwThread() { 
         return std::thread(
-            [&]{setPacketBuffer(this->gwInfo,this->Gbuffer);}
+            [this]{setPacketBuffer(this->gwInfo,this->Gbuffer);}
         );
     }
     
     std::thread setPacketBufferToTargetThread() { 
         return std::thread(
-            [&]{setPacketBuffer(this->targetInfo,this->Vbuffer);}
+            [this]{setPacketBuffer(this->targetInfo,this->Vbuffer);}
         );
     }
 
