@@ -8,7 +8,7 @@ cd build
 cmake ../
 make 
 make install
-cd ../
 sudo apt install libboost-program-options-dev 
+cd ../../
 g++ -std=c++17 ./src/sslstrip/ssl.cpp \
 ./src/arpspoof/arpspoof.cpp ./src/main.cpp -lpthread -ltins -lboost_program_options -o arpfox.run
