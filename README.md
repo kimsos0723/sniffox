@@ -13,6 +13,7 @@ sslstrip was not applied but It had a successful test on Http
  - boost/program_options
  - libpcap-dev
  - Debian 
+ - pthread
 
 ## Instalation
     $ git clone https://github.com/kimsos0723/
