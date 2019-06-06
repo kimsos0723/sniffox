@@ -16,7 +16,7 @@ sslstrip was not applied but It had a successful test on Http
  - pthread
 
 ## Instalation
-    $ git clone https://github.com/kimsos0723/
+    $ git clone https://github.com/kimsos0723/sniffox.git
     $ sniffox.git
     $ cd sniffox
     $ chmod +x ./init.sh
