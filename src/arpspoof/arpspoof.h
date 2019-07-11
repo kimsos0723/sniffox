@@ -1,99 +1,87 @@
-#ifndef ARPSPOOF_H
+#if !defined(ARPSPOOF_H)
 #define ARPSPOOF_H
 
 #include <iostream>
 #include <tins/tins.h>
+
 #include <thread>
-#include <array>
-using namespace Tins;
+#include <mutex>
 
-constexpr int BufSize = 6;
+#include <queue>
+constexpr int BufSize = 10;
 
-using  std::cout;
+using std::cout;
 using std::endl;
-using Array = std::array<EthernetII, BufSize>;
+using std::queue;
+using std::thread;
 
+using namespace Tins;
+using Buffer = std::queue<EthernetII>;
 
-
-struct ForwardParam { 
-        IPv4Address to;
-        IPv4Address from;
-        HWAddress<6> toHw;
-        HWAddress<6> from_hw; 
-        std::string device; 
-        IPv4Address myIp;        
-        ForwardParam() = default;
-
-        ForwardParam(IPv4Address to, IPv4Address from, HWAddress<6> toHw,
-            HWAddress<6> from_hw, std::string& device, IPv4Address myIp) : device(device){
-                this->to = to;
-                this->from = from;
-                this->toHw = toHw;
-                this->from_hw = from_hw;                
-                this->myIp = myIp;
-        }
-    };
-class ArpSpoofer {
-    
-private:    
-    NetworkInterface iface;
-    NetworkInterface::Info info;    
-    std::string device;
-    PacketSender arpSender;    
-    HWAddress<6> gwHwAddr, targetHwAddr;
-    IPv4Address targetIp, myIp, gwIp;
-    EthernetII toGw, toTarget;
-    ForwardParam targetInfo;
-    ForwardParam gwInfo;
-
-    Array Gbuffer;
-    Array Vbuffer;
-
-public:                    
-    ArpSpoofer() = default;
-    ArpSpoofer(IPv4Address target, IPv4Address my, IPv4Address gw, std::string device);    
-    
-    IPv4Address getGwIp() {return this->gwIp;}
-    IPv4Address getTargetIP() {return this->targetIp;}
-    HWAddress<6> getGwHw() {return this->gwHwAddr;}
-    HWAddress<6> getTargetHw() {return this->targetHwAddr;}
-    std::string getDevice() {return this->device;}
-    IPv4Address getMyIp() {return this->myIp;}
+struct AttackInfo {
+    IPv4Address targetIp;
+    IPv4Address myIp;
+    IPv4Address gwIp;    
         
-    void doArpspoof();
-    EthernetII modifyPacket(PDU* pdu, ForwardParam& p);
-
-    void setPacketBuffer(ForwardParam p, Array a);
-    void sendPacketBuffer(Array ar) {
-        for(auto i : ar)
-            this->arpSender.send(i);
-    };
-    EthernetII MakeArpReply(IPv4Address to, IPv4Address from, ARP::hwaddress_type toHw);
-
-    std::thread bufferSendToGwThread() {
-        return std::thread(
-            [this]{sendPacketBuffer(this->Gbuffer);}
-        );
+    NetworkInterface iface;
+    std::string deviceName;
+    HWAddress<6> gwHwAddr;
+    HWAddress<6> targetHwAddr;
+    AttackInfo() : targetIp(nullptr), myIp(nullptr), gwIp(nullptr), iface(nullptr), deviceName(nullptr), gwHwAddr(nullptr), targetHwAddr(nullptr) {};
+    AttackInfo(IPv4Address targetIp, IPv4Address myIp, IPv4Address gwIp, std::string deviceName) 
+               : iface(NetworkInterface(deviceName)), myIp(myIp), gwIp(gwIp), targetIp(targetIp), deviceName(deviceName)
+    {
+        auto ps = PacketSender(this->iface);        
+        this->gwHwAddr = Utils::resolve_hwaddr(this->iface, gwIp , ps);
+        this->targetHwAddr = Utils::resolve_hwaddr(this->iface, targetIp, ps);          
     }
-
-    std::thread bufferSendToTargetThread() {
-        return std::thread(
-            [this]{sendPacketBuffer(this->Vbuffer);}
-        );
-    }
-
-    std::thread setPacketBufferToGwThread() { 
-        return std::thread(
-            [this]{setPacketBuffer(this->gwInfo,this->Gbuffer);}
-        );
-    }
-    
-    std::thread setPacketBufferToTargetThread() { 
-        return std::thread(
-            [this]{setPacketBuffer(this->targetInfo,this->Vbuffer);}
-        );
-    }
-
 };
 
-#endif 
+struct SendingInfo {
+    NetworkInterface iface;
+    NetworkInterface::Info info;
+    std::string deviceName;
+    SendingInfo(): iface(nullptr), deviceName(nullptr) {};
+    SendingInfo(NetworkInterface iface, std::string deviceName) 
+                : iface(iface), deviceName(deviceName){
+                    info = iface.info();
+                }
+};
+
+struct ArpStream {    
+    thread toGwSetPacktRoutine, toTargetSetPacktRoutine;
+    thread sendArpRoutine, arpPoisoningRoutine;
+    std::mutex mutexLock;
+    Buffer arpBuf;
+    Buffer crackedPacketBuf;
+    ARP toGwARP, toTargetARP; 
+};
+
+class ArpSpoof {
+private:
+    SendingInfo sendInfo;
+    PacketSender arpSender;            
+    AttackInfo attInfo;     
+public:
+    ArpStream arpStrm;   
+    ArpSpoof() = delete;    
+    ArpSpoof(const AttackInfo&);
+
+    void MakeArpReply();
+    void arpPoisoning();
+        
+    EthernetII crackPacketFromGw(const PDU& pdu);
+    EthernetII crackPacketFromTarget(const PDU& pdu);
+
+    void setCrackedPackToGwbuf(const PDU&);
+    void setCrackedPackToTargetbuf(const PDU&);
+
+    void ForwardPacketFromGw();
+    void ForwardPacketFromTarget();
+
+    void sendCrackedPacket();
+    void run();
+};
+
+#endif
+

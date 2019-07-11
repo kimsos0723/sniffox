@@ -2,13 +2,14 @@
 #include <thread>
 #include <boost/program_options.hpp>
 #include <signal.h>
-#include "arpspoof/arpspoof.h"
+#include "./arpspoof/arpspoof.h"
 
 using namespace boost;
 using namespace std;
 using namespace boost::program_options;
 
-void intro() {
+void intro() 
+{
     cout<<R"(
 ███████╗███╗   ██╗██╗███████╗███████╗ ██████╗ ██╗  ██╗
 ██╔════╝████╗  ██║██║██╔════╝██╔════╝██╔═══██╗╚██╗██╔╝
@@ -75,7 +76,7 @@ int main(int argc, char const *argv[]) {
         return 0;
     }
     if(vm.count("version")) {
-        std::cout << "Version 2.3\n";
+        std::cout << "Version 2.4\n";
         return 0;
     }    
     try {       
@@ -84,20 +85,12 @@ int main(int argc, char const *argv[]) {
         return 1;
     }
 
-    auto spoof = new ArpSpoofer(Tins::IPv4Address(vm["target"].as<std::string>()), Tins::IPv4Address(vm["ip"].as<std::string>()), Tins::IPv4Address(vm["gateway"].as<std::string>()), vm["device"].as<std::string>());
-
-    thread t1(&ArpSpoofer::doArpspoof, spoof);
-    
-    thread t2 = spoof->setPacketBufferToGwThread();
-    thread t3 = spoof->setPacketBufferToTargetThread();
-    thread t4 = spoof->bufferSendToGwThread();
-    thread t5 = spoof->bufferSendToTargetThread();
-
-    t1.join();
-    t2.join();
-    t3.join();
-    t4.join();
-    t5.join();
+    // auto spoof = new ArpSpoofer(Tins::IPv4Address(vm["target"].as<std::string>()), Tins::IPv4Address(vm["ip"].as<std::string>()), Tins::IPv4Address(vm["gateway"].as<std::string>()), vm["device"].as<std::string>());
+    AttackInfo attackInfo = AttackInfo(
+        Tins::IPv4Address(vm["target"].as<std::string>()), Tins::IPv4Address(vm["ip"].as<std::string>()), Tins::IPv4Address(vm["gateway"].as<std::string>()), vm["device"].as<std::string>()
+    ); 
+    auto spoof = new ArpSpoof(attackInfo);
+    spoof->run();     
     delete spoof;
     return 0;
 }
