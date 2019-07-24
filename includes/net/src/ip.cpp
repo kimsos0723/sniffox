@@ -1,7 +1,6 @@
 #include "../includes/ip.h"
 #include "../includes/err.h"
 #include <sstream>
-
 #include <iostream>
 #include <regex>
 using namespace std;
@@ -10,7 +9,7 @@ Ipv4Addr::Ipv4Addr(const string ip_str)
     smatch m;
     regex e("^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$");
     if (not regex_match(ip_str, e)) {
-         throw NotIpAddrString();
+         throw network::NotIpAddrString();
     }        
     string res;
     uint8_t tmp[4] = {0,};
