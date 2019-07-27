@@ -13,7 +13,7 @@ public:
     explicit Ipv4Addr(const Ipv4Addr& ip_bin) : ip(ip_bin.ip) {}
     explicit Ipv4Addr(const uint32_t& ip_int) : ip(ip_int) {}
     explicit Ipv4Addr(const string& ip_str);    
-    ~Ipv4Addr() {this->ip = 0xFFFFFFFF;}    
+    ~Ipv4Addr() {this->ip = 0xFFFFFFFF; delete this;}    
     explicit operator string() const;
     explicit operator uint32_t() const { return ip; }    
 
