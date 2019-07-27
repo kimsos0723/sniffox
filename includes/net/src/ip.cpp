@@ -1,13 +1,9 @@
 #include "../includes/ip.h"
-#include "../includes/err.h"
-#include <regex>
-
-
 
 Ipv4Addr::Ipv4Addr(const string& ip_str)
 {    
     if(not inet_pton(AF_INET, ip_str.c_str(), &(this->ip))) {
-        throw network::NotIpAddrString();
+        throw std::invalid_argument("Worng IP Syntax");
     }
 }
 
