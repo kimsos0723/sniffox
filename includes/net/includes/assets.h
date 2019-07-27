@@ -3,9 +3,7 @@
 #include <stdint.h>
 #include <arpa/inet.h>
 #include <string>
+#include <iostream>
 
 using std::string;
-
-namespace network {
-
-} // namespace network
+using std::ostream;
