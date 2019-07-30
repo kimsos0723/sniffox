@@ -28,8 +28,3 @@ HWAddr::operator uint64_t() const
 {
     return uint64_t(mac[0]) << 40 | uint64_t(mac[1]) << 32 | (mac[2]) << 24 | (mac[3]) << 16 | (mac[4]) << 8 | (mac[5]);
 }
-
-// ostream& operator<<(ostream& o, const mac_t& m)
-// {
-//     return o;
-// }

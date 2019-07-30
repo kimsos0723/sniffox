@@ -24,6 +24,6 @@ public:
     explicit operator string() const;
     explicit operator uint64_t() const;
 
-    friend ostream& operator<<(ostream& o, const HWAddr& i);
+    friend ostream& operator<<(ostream& o, const HWAddr& i) { return o << string(i); }
 };
 }
