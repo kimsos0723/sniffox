@@ -10,10 +10,12 @@ class HWAddr {
 public:
     HWAddr() = delete;
     explicit HWAddr(const string& mac_str);
-
     explicit HWAddr(const HWAddr& hwaddr_) { copy(hwaddr_.mac, hwaddr_.mac + MACSIZE, this->mac); }
     explicit HWAddr(const mac_t& mac_) { copy(mac_, mac_ + MACSIZE, this->mac); }
     
+    mac_t* getip() { return &mac; } 
+    void setip(mac_t mac_) { copy(mac_, mac_ + MACSIZE, this->mac); }
+       
 
     ~HWAddr()
     {
