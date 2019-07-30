@@ -10,7 +10,6 @@ struct ARP {
     uint8_t hlen;
     uint8_t plen;
     uint16_t oper;
-    uint16_t senderHA;
     MAC smac;
     IP sip;
     MAC tmac;
