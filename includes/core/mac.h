@@ -10,7 +10,7 @@ class HWAddr {
 public:
     HWAddr() = delete;
     explicit HWAddr(const string& mac_str);
-    
+
     explicit HWAddr(const HWAddr& hwaddr_) { copy(hwaddr_.mac, hwaddr_.mac + MACSIZE, this->mac); }
     explicit HWAddr(const mac_t& mac_) { copy(mac_, mac_ + MACSIZE, this->mac); }
     
@@ -22,7 +22,7 @@ public:
     }
 
     explicit operator string() const;
-    explicit operator uint64_t() const {}
+    explicit operator uint64_t() const;
 
     friend ostream& operator<<(ostream& o, const HWAddr& i);
 };
