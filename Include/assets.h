@@ -7,6 +7,7 @@
 #include <sstream>
 #include <stdexcept>
 #include <string>
+#include <vector>
 
 using std::regex;
 
@@ -21,3 +22,12 @@ using std::uint8_t;
 using std::copy;
 
 using std::stringstream;
+
+using std::vector;
+
+static thread_local stringstream ss;
+
+inline void clear_ss() { 
+    ss.str("");
+    ss.clear();
+}
