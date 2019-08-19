@@ -6,8 +6,9 @@ struct capturer {
     pcap_t* descr;
     struct bpf_program fp;
     const u_char* packet;
-    bpf_u_int32 netp;
-    pcap_t* setfilter(std::string filter_str = "")
+    bpf_u_int32 netp;    
+    pcap_pkthdr* pkthdr;
+    pcap_t* retrun_capturer(std::string filter_str = "")
     {
         bpf_program* filter = new bpf_program;
         char err_buf[PCAP_ERRBUF_SIZE] = {

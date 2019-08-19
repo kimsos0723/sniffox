@@ -28,6 +28,8 @@ public:
             inner_pdu()->deserialize(tmp);
         }
     }    
+    Ipv4Addr src_ip() {return header_.sip;}
+    Ipv4Addr dest_ip() {return header_.dip;}
 private:
 #pragma pack(push, 1)
     struct ip_header {

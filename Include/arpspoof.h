@@ -1,5 +1,7 @@
 #include "include.h"
 #include <queue>
+#include <thread>
+#include <mutex>
 
 using namespace pdu;
 class session {
@@ -33,13 +35,14 @@ public:
         (sessions.push_back(sess), ...);
     }
 
+    void push_relay_packet();
     void run();
     Ethernet make_infection(session sess);
 private:
+    capturer capturer_;    
     Interface iface;
-    Sender arp_sender;
-    capturer cap;
+    Sender arp_sender;    
     vector<session> sessions;
-    vector<PDU*> pdus;
+    std::queue<PDU*> relay_qeue;
 };
 
