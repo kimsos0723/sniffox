@@ -28,17 +28,21 @@ session::session(string sip,string tip, string dev_name)
 
 class ArpSpoofer {
 public:
-    template <typename... Ss>
-    ArpSpoofer(std::string dev_name, Ss... sess)
-        : arp_sender(iface), iface(dev_name)
+    // template <typename... Ss>
+    // ArpSpoofer(std::string dev_name, Ss... sess)
+    //     : arp_sender(iface), iface(dev_name)
+    // {        
+    //     (sessions.push_back(sess), ...);
+    // }
+    ArpSpoofer(vector<session> sesss) 
+        : sessions(sesss)
     {        
-        (sessions.push_back(sess), ...);
     }
-
     void push_relay_packet();
     void run();
     Ethernet make_infection(session sess);
 private:
+    std::mutex mtx;
     capturer capturer_;    
     Interface iface;
     Sender arp_sender;    

