@@ -43,6 +43,6 @@ private:
     Interface iface;
     Sender arp_sender;    
     vector<session> sessions;
-    std::queue<PDU*> relay_qeue;
+    std::queue<bytes> relay_qeue;
 };
 

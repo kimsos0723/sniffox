@@ -14,7 +14,6 @@ public:
     
     IP() {}
     IP(IP& src_addr,IP& dst_addr);                        
-    // IP(const uint8_t* buffer, size_t size);    
     ~IP() {}
     void write_serialization(bytes& bs);        
     size_t header_size() const{return sizeof(header_); }

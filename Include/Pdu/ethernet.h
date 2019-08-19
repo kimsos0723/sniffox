@@ -32,7 +32,7 @@ public:
     }
     
     HWAddr src_mac() {return header_.src_mac; }
-    HWAddr dst_mac() {return header_.dst_mac; }
+    HWAddr dst_mac() {return header_.dst_mac; }    
     EtherType type() {return header_.ether_type;}
 private:
 #pragma pack(push, 1)
