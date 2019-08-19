@@ -1,4 +1,6 @@
 #include "include.h"
+#include <queue>
+
 using namespace pdu;
 class session {
 public:
@@ -16,10 +18,8 @@ session::session(string sip,string tip, string dev_name)
     auto ti = Ipv4Addr(tip);
     sender_ip = &si;
     target_ip = &ti;
-    auto sm = s.ip_to_mac(*sender_ip);
-    std::cout << "asdf"<<std::endl;
-    auto tm = s.ip_to_mac(*target_ip);
-    
+    auto sm = s.ip_to_mac(*sender_ip);   
+    auto tm = s.ip_to_mac(*target_ip);    
     sender_mac = &sm;
     target_mac = &tm;
 }
@@ -40,5 +40,6 @@ private:
     Sender arp_sender;
     capturer cap;
     vector<session> sessions;
+    vector<PDU*> pdus;
 };
 

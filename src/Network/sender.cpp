@@ -17,8 +17,7 @@ SEND:
     /*
         recv
     */
-    time_t curr_time = time(NULL);
-    int i = 0;
+    time_t curr_time = time(NULL);    
     {
         char errbuf[PCAP_ERRBUF_SIZE] = { 0, };
         pcap_t* desc = pcap_open_live(iface.dev().c_str(), 8192, 0, 512, errbuf);
@@ -26,20 +25,14 @@ SEND:
         pcap_pkthdr* hdr;
         const u_char* pkt;
         while((res = pcap_next_ex(desc, &hdr, &pkt)) >= 0) {                
-            time_t rcv_time = time(NULL);
-            i++;
-            if((rcv_time-curr_time) >= 2){
-                if(i>3) {
-                    throw;
-                }                
-            }            
+            time_t rcv_time = time(NULL);    
             if(res == 0) continue;
             ARP a = ARP();
             Ethernet e = Ethernet();
             e/=a;
             bytes b = bytes(pkt, pkt+sizeof(Ethernet)+sizeof(ARP));
             e.deserialize(b);
-            if (e.dst_mac().mac() != iface.mac()) continue;
+            if (e.dst_mac().mac() != iface.mac().mac()) continue;
             if( ((int)e.type()) != htons((uint16_t)Ethernet::EtherType::ARP)) continue;
             std::cout << e.src_mac() << std::endl;
             return e.src_mac();

