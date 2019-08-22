@@ -29,7 +29,7 @@ struct Interface {
         iface.ip = *(Ipv4Addr*)&ifr.ifr_addr;
         iface.ip = *(Ipv4Addr*)&((struct sockaddr_in*)&ifr.ifr_addr)->sin_addr;        
     }
-    Interface(Interface& ifa){ this->iface = ifa.iface; }
+    Interface(const Interface& ifa){ this->iface = ifa.iface; }
     HWAddr& mac() { return iface.mac; }
     Ipv4Addr& ip() { return iface.ip; }
     std::string dev() { return iface.dev; }

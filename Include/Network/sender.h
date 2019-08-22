@@ -5,13 +5,13 @@
 #include "Pdu/ip.h"
 #include "interface.h"
 class Sender {
-
 public:
     Sender(std::string dev)
         : iface(dev)
     {
+        std::cout<<"sended"<<std::endl;
     }
-    Sender(Interface ifa)
+    Sender(Interface& ifa)
         : iface(ifa)
     {
     }

@@ -11,7 +11,7 @@ class HWAddr {
 public:
     explicit HWAddr(){};
     explicit HWAddr(const string mac_str);
-    HWAddr(HWAddr& hwaddr_) { memcpy(this->_mac, hwaddr_._mac,sizeof(mac_t));}    
+    HWAddr(const HWAddr& hwaddr_) { memcpy(this->_mac, hwaddr_._mac,sizeof(mac_t));}    
     explicit HWAddr(const mac_t& mac) { copy(mac, mac + MACSIZE, this->_mac); }
 
     mac_t& mac() { return _mac; }
@@ -25,6 +25,7 @@ public:
 
     explicit operator string() const;
     explicit operator uint64_t() const;    
+    HWAddr& operator=(HWAddr hd) { memcpy( this->_mac, hd._mac, sizeof(HWAddr)); return *this; }
     friend ostream& operator<<(ostream& o, const HWAddr& i) { return o << string(i); }
 
 private:

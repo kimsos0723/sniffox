@@ -10,7 +10,7 @@ class Ipv4Addr {
 
 public:
     Ipv4Addr() {};
-    Ipv4Addr(Ipv4Addr& ip_bin)
+    Ipv4Addr(const Ipv4Addr& ip_bin)
     {
         this->_ip = ip_bin._ip;
     }
@@ -24,8 +24,8 @@ public:
 
     explicit operator string() const;
     explicit operator uint32_t() const { return _ip; }
-
-    friend ostream& operator<<(ostream& o, const Ipv4Addr& i) { return o << string(i); }
+    Ipv4Addr& operator=(Ipv4Addr ip) { this->_ip=ip._ip; return *this; }
+    friend ostream& operator<<(ostream& o, const Ipv4Addr& i) { return o << string(i);  }
 private:
     ip_t _ip;
 };

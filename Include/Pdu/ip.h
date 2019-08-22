@@ -8,24 +8,14 @@ using core::Ipv4Addr;
 using bytes = vector<uint8_t>;
 
 namespace pdu {
-class IP : public PDU {
-public:    
-    static const PDU::PDUType pdu_flag = PDU::PDUType::IP;
-    
+class IP {
+public:        
     IP() {}
     IP(IP& src_addr,IP& dst_addr);                        
     ~IP() {}
-    void write_serialization(bytes& bs);        
-    size_t header_size() const{return sizeof(header_); }
-    size_t trailer_size() const { return 0;}    
-    PDUType pdu_type() const { return PDUType::IP; }        
     
     void deserialize(bytes& b ) {                 
-        memcpy(&header_, &b[0], sizeof(ip_header));        
-        if(inner_pdu() != nullptr) {
-            bytes tmp(b.begin()+sizeof(ip_header),b.end());
-            inner_pdu()->deserialize(tmp);
-        }
+        memcpy(&header_, &b[0], sizeof(ip_header));                
     }    
     Ipv4Addr src_ip() {return header_.sip;}
     Ipv4Addr dest_ip() {return header_.dip;}
