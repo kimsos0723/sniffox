@@ -48,26 +48,25 @@ void ForwardProxy::modify_packet(const MACAddress& tohw, EthernetII& ether) {
     ether.src_addr(ether.dst_addr);
 }
 
-void ForwardProxy::run() _GLIBCXX_NORETURN {
-    // auto to_origin_dst = curry(
-    //     modify_packet, __origin_dst.__hw);
+void ForwardProxy::runProxy() {
+    auto to_origin_dst = curry(
+        modify_packet, __origin_dst.__hw);
 
-    // auto to_origin_src = curry(
-    //     modify_packet, __origin_src.__hw);
+    auto to_origin_src = curry(
+        modify_packet, __origin_src.__hw);
 
     while (true) {
-        
-        // MACAddress current_src_addr = current_packet.src_addr();
+        EthernetII current_packet = pop_recved_packet();
+        MACAddress current_src_addr = current_packet.src_addr();
 
-        // if (current_src_addr == __origin_src.__hw()) {
-        //     to_origin_dst(current_packet);
-        // } else if(current_src_addr == __origin_dst.__hw()) {
-        //     to_origin_src(current_packet);
-        // } else {
-
-        // }
-
-        
+        if (current_src_addr == __origin_src.__hw()) {
+            to_origin_dst(current_packet);
+        } else if (current_src_addr == __origin_dst.__hw()) {
+            to_origin_src(current_packet);
+        } else {
+            continue;
+        }
+        push_sending_packet(current_packet);
     }
 }
 

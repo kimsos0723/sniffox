@@ -48,8 +48,7 @@ class ForwardProxy {
 
     ForwardProxy(const ForwardProxy&) = delete;             /// @warning deleted
     ForwardProxy& operator=(const ForwardProxy&) = delete;  /// @warning deleted
-    void run();
-
+    void runProxy() _GLIBCXX_NORETURN ;
    protected:
     void push_recved_packet(const EthernetII&);  /// @todo It would be call by other functions to push received packet buffer
     EthernetII pop_sending_packet();             /// @todo It would be call by other functions to pop modified packet
