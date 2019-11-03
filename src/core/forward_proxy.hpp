@@ -51,7 +51,7 @@ class ForwardProxy {
     void runProxy() _GLIBCXX_NORETURN ;
    protected:
     void push_recved_packet(const EthernetII&);  /// @todo It would be call by other functions to push received packet buffer
-    EthernetII pop_sending_packet();             /// @todo It would be call by other functions to pop modified packet
+    std::optional<EthernetII> pop_sending_packet();             /// @todo It would be call by other functions to pop modified packet
 
    private:
     const Session __origin_src;
@@ -60,7 +60,7 @@ class ForwardProxy {
     mutable queue<EthernetII> __recv_buffer;  // @brief packet-buffer what before processed
     mutable queue<EthernetII> __send_buffer;  // @brief packet-buffer what after processed
 
-    EthernetII pop_recved_packet();
+    std::optional<EthernetII> pop_recved_packet();
     void push_sending_packet(const EthernetII&);
 
     void modify_packet(const MACAddress&, EthernetII&);  /// @todo Modify packet to forward

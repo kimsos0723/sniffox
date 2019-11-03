@@ -13,21 +13,19 @@ void ForwardProxy::push_recved_packet(const EthernetII& ether) {
     __recv_buffer.push(ether);
 }
 
-EthernetII ForwardProxy::pop_recved_packet() {
-    EthernetII result = EthernetII();
+EthernetII ForwardProxy::pop_recved_packet() {    
     if (!__recv_buffer.empty())
-        result(__recv_buffer.front());
-    return result;
+        return __recv_buffer.front();
+    return {};
 }
 
 void ForwardProxy::push_sending_packet(const EthernetII& ether){
     __send_buffer.push(ether)}
 
-EthernetII ForwardProxy::pop_sending_packet() noexcept {
-    EthernetII result = EthernetII();
+std::optional<EthernetII> ForwardProxy::pop_sending_packet() noexcept {    
     if (!__send_buffer.empty())
-        result(__send_buffer.front());
-    return result;
+        retrun __send_buffer.front();
+    return {};
 }
 
 /**
