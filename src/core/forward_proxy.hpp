@@ -6,8 +6,8 @@ namespace ctrl {
      * @brief The struct used to identify the Session     
     */
 struct Session {
-    MACAddress __hw;
-    IPv4Address __ip;
+    const MACAddress __hw;
+    const IPv4Address __ip;
 
     Session() = delete;  /// @warning deleted
 
@@ -31,8 +31,8 @@ class ForwardProxy {
     ForwardProxy& operator=(const ForwardProxy&) = delete;  /// @warning deleted
     void runProxy() _GLIBCXX_NORETURN;
 
-    void push_recved_packet(const PDU&);  
-    std::optional<PDU> pop_sending_packet();
+    void push_recved_packet(const EthernetII&);  
+    std::optional<EthernetII> pop_sending_packet() noexcept;
 
    private:
     const Session __origin_src;
@@ -41,9 +41,9 @@ class ForwardProxy {
     mutable PacketBuffer __recv_buffer;  // @brief packet-buffer what before processed
     mutable PacketBuffer __send_buffer;  // @brief packet-buffer what after processed
 
-    std::optional<PDU> pop_recved_packet();
-    void push_sending_packet(const PDU&);
-    void modify_packet(const MACAddress&, PDU&);  /// @todo Modify packet to forward
+    std::optional<EthernetII> pop_recved_packet();
+    void push_sending_packet(const EthernetII&);
+    void modify_packet(const MACAddress&, EthernetII&);  /// @todo Modify packet to forward
 };
 
 };  // namespace ctrl

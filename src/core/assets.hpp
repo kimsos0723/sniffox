@@ -14,6 +14,7 @@ using Tins::PDU;
 using Tins::PacketSender;
 using Tins::SnifferConfiguration;
 using Tins::Sniffer;
+using Tins::NetworkInterface;
 
 using MACAddress = HWAddress<6>;
 using PacketBuffer = queue<PDU>;
