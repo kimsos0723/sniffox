@@ -8,21 +8,20 @@ ForwardProxy::ForwardProxy(Session origin_src, Session origin_dst)
 /**
  * @brief Push to received-packet-buffer from other funcions
 */
-
-void ForwardProxy::push_recved_packet(const EthernetII& ether) {
-    __recv_buffer.push(ether);
+void ForwardProxy::push_recved_packet(const PDU& pdu) {
+    __recv_buffer.push(pdu);
 }
 
-EthernetII ForwardProxy::pop_recved_packet() {    
+std::optional<PDU> ForwardProxy::pop_recved_packet() noexcept {
     if (!__recv_buffer.empty())
         return __recv_buffer.front();
     return {};
 }
 
-void ForwardProxy::push_sending_packet(const EthernetII& ether){
-    __send_buffer.push(ether)}
+void ForwardProxy::push_sending_packet(const PDU& pdu){
+    __send_buffer.push(pdu)}
 
-std::optional<EthernetII> ForwardProxy::pop_sending_packet() noexcept {    
+std::optional<PDU> ForwardProxy::pop_sending_packet() noexcept {
     if (!__send_buffer.empty())
         retrun __send_buffer.front();
     return {};

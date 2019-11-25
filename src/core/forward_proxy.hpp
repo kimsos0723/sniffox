@@ -1,21 +1,4 @@
-#include <tins/ethernetII.h>
-#include <tins/hw_address.h>
-#include <tins/ip.h>
-#include <tins/ip_address.h>
-#include <tins/tcp.h>
-#include <tins/utils.h>
-
-#include <queue>
-
-using std::queue, std::pair;
-
-using Tins::HWAddress;
-using Tins::IPv4Address;
-
-using Tins::EthernetII;
-using Tins::IP;
-
-using MACAddress = HWAddress<6>;
+#include "./assets.hpp"
 
 namespace ctrl {
 
@@ -43,27 +26,24 @@ class ForwardProxy {
 
    public:
     ForwardProxy() = delete;  /// @warning deleted
-
     ForwardProxy(Session origin_src, Session origin_dst);  /// @brief default Constructor
-
     ForwardProxy(const ForwardProxy&) = delete;             /// @warning deleted
     ForwardProxy& operator=(const ForwardProxy&) = delete;  /// @warning deleted
-    void runProxy() _GLIBCXX_NORETURN ;
-   protected:
-    void push_recved_packet(const EthernetII&);  /// @todo It would be call by other functions to push received packet buffer
-    std::optional<EthernetII> pop_sending_packet();             /// @todo It would be call by other functions to pop modified packet
+    void runProxy() _GLIBCXX_NORETURN;
+
+    void push_recved_packet(const PDU&);  
+    std::optional<PDU> pop_sending_packet();
 
    private:
     const Session __origin_src;
     const Session __origin_dst;
 
-    mutable queue<EthernetII> __recv_buffer;  // @brief packet-buffer what before processed
-    mutable queue<EthernetII> __send_buffer;  // @brief packet-buffer what after processed
+    mutable PacketBuffer __recv_buffer;  // @brief packet-buffer what before processed
+    mutable PacketBuffer __send_buffer;  // @brief packet-buffer what after processed
 
-    std::optional<EthernetII> pop_recved_packet();
-    void push_sending_packet(const EthernetII&);
-
-    void modify_packet(const MACAddress&, EthernetII&);  /// @todo Modify packet to forward
+    std::optional<PDU> pop_recved_packet();
+    void push_sending_packet(const PDU&);
+    void modify_packet(const MACAddress&, PDU&);  /// @todo Modify packet to forward
 };
 
 };  // namespace ctrl
