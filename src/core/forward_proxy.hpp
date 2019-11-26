@@ -39,8 +39,8 @@ class ForwardProxy {
     const Session __origin_dst;
 
     mutable PacketBuffer __recv_buffer;  // @brief packet-buffer what before processed
-    mutable PacketBuffer __send_buffer;  // @brief packet-buffer what after processed
-
+    mutable PacketBuffer __send_buffer;  // @brief packet-buffer what after processed        
+    
     std::optional<EthernetII> pop_recved_packet();
     void push_sending_packet(const EthernetII&);
     void modify_packet(const MACAddress&, EthernetII&);  /// @todo Modify packet to forward
