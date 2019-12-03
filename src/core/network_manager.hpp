@@ -1,6 +1,6 @@
-#include "assets.hpp"
-#include <optional>
 #include <mutex>
+#include <optional>
+#include "assets.hpp"
 using std::mutex;
 using std::optional;
 
@@ -11,24 +11,25 @@ namespace ctrl {
 class NetworkManager {
    public:
     NetworkManager() = delete;
-    NetworkManager(std::string, std::string, bool, int);
+    NetworkManager(const std::string&, const std::string&, bool promise_mod, pcap_direction_t direction);
 
     optional<EthernetII> pop_recved_qeue();
-    void push_send_queue(EthernetII) noexcept;
-    
+    void push_send_queue(EthernetII);
+
+    void sniff_packet_loop() _GLIBCXX_NORETURN;
+    void send_packet_loop() _GLIBCXX_NORETURN;
+
    private:
     mutex s_queue_mutex;
     mutex r_queue_mutex;
-    
-    queue<EthernetII> send_queue;
-    queue<EthernetII> recv_queue;
 
     void push_recved_qeue(EthernetII);
     optional<EthernetII> pop_send_queue();
-    
-    mutable PacketBuffer __recv_buffer;  // @brief packet-buffer what before processed
-    mutable PacketBuffer __send_buffer;  // @brief packet-buffer what after processed       
 
+    PacketBuffer __recv_buffer;  // @brief packet-buffer what before processed
+    PacketBuffer __send_buffer;  // @brief packet-buffer what after processed
+
+    NetworkInterface __iface;
     PacketSender __sender;
     SnifferConfiguration __config;
     Sniffer __sniffer;
