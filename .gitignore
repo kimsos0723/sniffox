@@ -1,6 +1,6 @@
 
-# Created by https://www.gitignore.io/api/c++,linux,visualstudiocode
-# Edit at https://www.gitignore.io/?templates=c++,linux,visualstudiocode
+# Created by https://www.gitignore.io/api/c++,code
+# Edit at https://www.gitignore.io/?templates=c++,code
 
 ### C++ ###
 # Prerequisites
@@ -36,26 +36,11 @@
 *.out
 *.app
 
-### Linux ###
-*~
-
-# temporary files which can be created if a process still has a handle open of a deleted file
-.fuse_hidden*
-
-# KDE directory preferences
-.directory
-
-# Linux trash folder which might appear on any partition or disk
-.Trash-*
-
-# .nfs files are created when an open file is removed but is still being accessed
-.nfs*
-
-### VisualStudioCode ###
+### Code ###
 .vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
 
-### VisualStudioCode Patch ###
-# Ignore all local history of files
-.history
-
-# End of https://www.gitignore.io/api/c++,linux,visualstudiocode
+# End of https://www.gitignore.io/api/c++,code
