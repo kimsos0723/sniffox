@@ -3,7 +3,8 @@
 namespace ctrl {
 
 ForwardProxy::ForwardProxy(Session origin_src, Session origin_dst)
-    : __origin_dst(origin_dst), __origin_src(origin_src) {}
+    : __origin_dst(origin_dst), __origin_src(origin_src) {
+}
 
 template <typename F, typename... Args>
 auto curry(F func, Args... args) {
@@ -15,12 +16,12 @@ auto curry(F func, Args... args) {
 /**
  * @details src ip of packet to 
 */
-void ForwardProxy::modify_packet(const MACAddress& tohw, EthernetII& eth) {
+void modify_packet(const MACAddress& tohw, EthernetII& eth) {
     eth.dst_addr(tohw);
     eth.src_addr(eth.dst_addr);
 }
 
-void ForwardProxy::runProxy() {
+void ForwardProxy::runProxy(NetworkManager netman) {
     auto to_origin_dst = curry(
         modify_packet, __origin_dst.__hw);
 
@@ -28,8 +29,7 @@ void ForwardProxy::runProxy() {
         modify_packet, __origin_src.__hw);
 
     while (true) {
-                
-        if (auto ocurrent_packet = pop_recved_packet(); ocurrent_packet) {
+        if (auto ocurrent_packet = netman.pop_recved_qeue(); ocurrent_packet) {
             auto current_packet = ocurrent_packet.value();
             MACAddress current_src_addr = current_packet.src_addr();
 
@@ -40,9 +40,8 @@ void ForwardProxy::runProxy() {
             } else {
                 continue;
             }
-            push_sending_packet(current_packet);
+            netman.push_send_queue(current_packet);
         }
     }
 }
-
 };  // namespace ctrl

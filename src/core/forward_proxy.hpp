@@ -1,8 +1,8 @@
 #include "./assets.hpp"
-
+#include "network_manager.hpp"
 namespace ctrl {
 
-/**
+    /**
      * @brief The struct used to identify the Session     
     */
 struct Session {
@@ -25,25 +25,15 @@ class ForwardProxy {
     */
 
    public:
-    ForwardProxy() = delete;  /// @warning deleted
+    ForwardProxy() = delete;                                               /// @warning deleted
     ForwardProxy(Session origin_src, Session origin_dst);  /// @brief default Constructor
-    ForwardProxy(const ForwardProxy&) = delete;             /// @warning deleted
-    ForwardProxy& operator=(const ForwardProxy&) = delete;  /// @warning deleted
-    void runProxy() _GLIBCXX_NORETURN;
+    ForwardProxy(const ForwardProxy&) = delete;                            /// @warning deleted
+    ForwardProxy& operator=(const ForwardProxy&) = delete;                 /// @warning deleted
+    void runProxy(NetworkManager) _GLIBCXX_NORETURN;
 
-    void push_recved_packet(const EthernetII&);  
-    std::optional<EthernetII> pop_sending_packet() noexcept;
-
-   private:
+   private:    
     const Session __origin_src;
     const Session __origin_dst;
-
-    mutable PacketBuffer __recv_buffer;  // @brief packet-buffer what before processed
-    mutable PacketBuffer __send_buffer;  // @brief packet-buffer what after processed        
-    
-    std::optional<EthernetII> pop_recved_packet();
-    void push_sending_packet(const EthernetII&);
-    void modify_packet(const MACAddress&, EthernetII&);  /// @todo Modify packet to forward
 };
 
 };  // namespace ctrl
