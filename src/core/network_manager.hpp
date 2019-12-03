@@ -1,6 +1,9 @@
 #include <mutex>
 #include <optional>
+#include <thread>
+
 #include "assets.hpp"
+
 using std::mutex;
 using std::optional;
 
@@ -18,7 +21,8 @@ class NetworkManager {
 
     void sniff_packet_loop() _GLIBCXX_NORETURN;
     void send_packet_loop() _GLIBCXX_NORETURN;
-
+    std::thread send_packet_loop_thread();
+    std::thread sniff_packet_loop_thread();
    private:
     mutex s_queue_mutex;
     mutex r_queue_mutex;

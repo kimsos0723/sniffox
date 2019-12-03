@@ -56,7 +56,14 @@ void NetworkManager::send_packet_loop() {
         auto pkt = pop_send_queue();
         if (pkt.has_value()) {
             pkt.value().send(__sender, __iface);                
+        }
     }
+}
+
+std::thread NetworkManager::send_packet_loop_thread() {
+    return std::thread(
+        [this]{ send_packet_loop(); }
+    );
 }
 
 };  // namespace ctrl

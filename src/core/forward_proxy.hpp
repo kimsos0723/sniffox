@@ -30,7 +30,7 @@ class ForwardProxy {
     ForwardProxy(const ForwardProxy&) = delete;                            /// @warning deleted
     ForwardProxy& operator=(const ForwardProxy&) = delete;                 /// @warning deleted
     void runProxy(NetworkManager) _GLIBCXX_NORETURN;
-
+    
    private:    
     const Session __origin_src;
     const Session __origin_dst;
