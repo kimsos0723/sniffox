@@ -13,9 +13,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: install libtins dependency
-      run: sudo apt-get install libpcap-dev libssl-dev cmake | 
-            git clone https://github.com/mfontanini/libtins.git && cd libtins |
-            mkdir build && cd build |
-            cmake ../ -DLIBTINS_ENABLE_CXX11=1 |
-            make && make install |
-            ldconfig
+      run: sudo apt-get install libpcap-dev libssl-dev cmake 
+    - name: install libtins 
+      run: git clone https://github.com/mfontanini/libtins.git && cd libtins && mkdir build && cd build && cmake .. && \
+            make && make install && ldconfig
