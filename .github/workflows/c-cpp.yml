@@ -10,14 +10,12 @@ jobs:
   build:
 
     runs-on: ubuntu-latest
-
     steps:
     - uses: actions/checkout@v2
-    - name: configure
-      run: ./configure
-    - name: make
-      run: make
-    - name: make check
-      run: make check
-    - name: make distcheck
-      run: make distcheck
+    - name: install libtins dependency
+      run: sudo apt-get install libpcap-dev libssl-dev cmake | 
+            git clone https://github.com/mfontanini/libtins.git && cd libtins |
+            mkdir build && cd build |
+            cmake ../ -DLIBTINS_ENABLE_CXX11=1 |
+            make && make install |
+            ldconfig
