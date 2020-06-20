@@ -13,7 +13,6 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: install libtins dependency
-      run: sudo apt-get install libpcap-dev libssl-dev cmake 
+      run: sudo apt-get install libpcap-dev libssl-dev cmake libboost-regex-dev 
     - name: install libtins 
-      run: git clone https://github.com/mfontanini/libtins.git && cd libtins && mkdir build && cd build && cmake .. && \
-            make && make install && ldconfig
+      run: git clone https://github.com/mfontanini/libtins.git && cd libtins && mkdir build && cd build && cmake .. && sudo make -j$(grep -c processor /proc/cpuinfo) install && sudo ldconfig
